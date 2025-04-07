@@ -1,5 +1,5 @@
 # Next MBTA Ride Sign
-# 2025 Paul Moran
+# 2025 Paul M
 # SPDX-License-Identifier: MIT
 
 # Creates a sign that shows when the next bus or train will arrive at an MBTA stop

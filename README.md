@@ -10,7 +10,7 @@ https://learn.adafruit.com/adafruit-matrixportal-m4
 and using a 64x32 RGB LED matrix.  https://www.adafruit.com/category/327
 Pick whatever size you like.
 
-I worked hard to keep the code very small, and with a minimum number of libraries so the
+I managed to keep the code very small, and with a minimum number of libraries so the
 limited memory of the M4 would not be a problem. And I improved on the code comments a bit
 to make it easier for you to configure your own sign.
 

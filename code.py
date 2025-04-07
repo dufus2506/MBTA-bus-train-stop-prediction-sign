@@ -113,7 +113,7 @@ def get_next_ride_times(current_ride):
     except Exception as e:
         print(f"Error fetching or parsing data: {e}")
         supervisor.reload()
-    return times  # Return the calculated time(s) in an array variable with one or two entries
+    return times  # Return the calculated time(s) in an array variable with one or more entries
 
 last_update = time.monotonic() - UPDATE_INTERVAL
 matrixportal.set_text(f"{LABEL[current_ride]}", 0)  # Set the initial sign scroll

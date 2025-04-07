@@ -124,7 +124,7 @@ while True:
             try:
                 # Set the device time from the network
                 # Be sure to include
-                # timezone = "America/New_York"
+                # timezone = "US/Eastern"
                 # in settings.toml or the system time may be set to GMT (UTC? Zulu?)
                 network.get_local_time()
                 last_time_sync = time.monotonic()

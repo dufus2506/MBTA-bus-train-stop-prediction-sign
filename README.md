@@ -40,7 +40,7 @@ AIO_USERNAME = "Your_AIO_Username"
 
 AIO_KEY      = "aio_Your_Really_Long_AIO_User_Key"
 
-timezone = "America/New_York"
+timezone = "US/Eastern"
 
 Don't forget the timezone entry, or your clock may be set to GMT.  WiFi settings are case
 sensitive in the settings.toml file, so be sure to match everything correctly for your WiFi network.

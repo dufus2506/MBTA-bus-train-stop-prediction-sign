@@ -49,7 +49,7 @@ When I was done I had the following files/directories on my board:
 
 ![image](https://github.com/user-attachments/assets/616f7d56-dc94-4faf-a10c-c8f14137a8a1)
 
-All but the lib directory were empty.
+All but the lib directory are empty.
 
 See the code.py file for configuration examples.  You only want one set of array variables for your
 configuration. You'll need some stop information to make the correct entries in your array variables. 

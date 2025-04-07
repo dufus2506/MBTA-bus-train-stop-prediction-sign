@@ -2,7 +2,7 @@
 # 2025 Paul Moran
 # SPDX-License-Identifier: MIT
 
-# Creates a sign that shows when the next bus or subway train will arrive at an MBTA stop
+# Creates a sign that shows when the next bus or train will arrive at an MBTA stop
 # Stops can be commuter rail stops, subway stations, or bus stops
 
 import time

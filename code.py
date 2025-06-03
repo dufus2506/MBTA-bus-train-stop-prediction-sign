@@ -1,9 +1,9 @@
 # Next MBTA Ride Sign
 # 2025 Paul M
 # SPDX-License-Identifier: MIT
-
+# Version 1.1 
 # Creates a sign that shows when the next bus or train will arrive at an MBTA stop
-# Stops can be commuter rail stops, subway stations, or bus stops
+# Stops can be commuter rail, subway stations, or bus stops
 
 import time
 import board
@@ -60,6 +60,7 @@ if network is None:
     network = (matrixportal.network)
 
 matrixportal.set_background(BACKGROUND_IMAGE) # Maybe make this part of 30 second updates too?
+matrixportal.display.brightness = 1
 
 matrixportal.add_text(     # Add text for the label line at the top
     text_font=terminalio.FONT,
@@ -113,7 +114,7 @@ def get_next_ride_times(current_ride):
     except Exception as e:
         print(f"Error fetching or parsing data: {e}")
         supervisor.reload()
-    return times  # Return the calculated time(s) in an array variable with one or more entries
+    return times  # Return the calculated time(s) in an array variable with one or two entries
 
 last_update = time.monotonic() - UPDATE_INTERVAL
 matrixportal.set_text(f"{LABEL[current_ride]}", 0)  # Set the initial sign scroll
@@ -133,8 +134,14 @@ while True:
                 supervisor.reload()
         now = datetime.now()
         ride_times = get_next_ride_times(current_ride)
-        matrixportal.set_text(f"{ride_times[0]:2d} min" if len(ride_times) > 0 else "None", 1)  # Update the first ride time
-        matrixportal.set_text(f"{ride_times[1]:2d} min" if len(ride_times) > 1 else "", 2)      # Update the second ride time
+        if len(ride_times) > 0:
+            matrixportal.set_text(f"{ride_times[0]:2d} min", 1) # Update the first ride time
+        else:
+            matrixportal.display.brightness = 0  # Turn off the display if there are no predictions
+        if len(ride_times) > 1:
+            matrixportal.set_text(f"{ride_times[1]:2d} min", 2) # Update the second ride time
+        else:
+            matrixportal.set_text("", 2)
         last_update = time.monotonic()
         if CYCLE_SIGN == "True":
             matrixportal.set_text(f"{LABEL[current_ride]}", 0)  # Update the sign scroll

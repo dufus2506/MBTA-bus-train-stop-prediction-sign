@@ -1,7 +1,7 @@
 # Next MBTA Ride Sign
 # 2025 Paul M
 # SPDX-License-Identifier: MIT
-
+# Version 1.0
 # Creates a sign that shows when the next bus or train will arrive at an MBTA stop
 # Stops can be commuter rail stops, subway stations, or bus stops
 

@@ -135,6 +135,7 @@ while True:
         now = datetime.now()
         ride_times = get_next_ride_times(current_ride)
         if len(ride_times) > 0:
+            matrixportal.display.brightness = 1
             matrixportal.set_text(f"{ride_times[0]:2d} min", 1) # Update the first ride time
         else:
             matrixportal.display.brightness = 0  # Turn off the display if there are no predictions

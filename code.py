@@ -1,9 +1,9 @@
 # Next MBTA Ride Sign
 # 2025 Paul M
 # SPDX-License-Identifier: MIT
-# Version 1.0
+
 # Creates a sign that shows when the next bus or train will arrive at an MBTA stop
-# Stops can be commuter rail stops, subway stations, or bus stops
+# Stops can be commuter rail, subway stations, or bus stops
 
 import time
 import board
@@ -42,14 +42,14 @@ ROUTE = ["108,411,430"]                  # Bus route(s) for your sign
 STOP_ID = ["9021"]                       # Stop ID(s) from the MBTA
 
 # Pick an image that's appropriate for your sign
-BACKGROUND_IMAGE = "/t_bus.bmp"  # t_bus, t_blu, t_orn, t_red, t_grn, t_crl, or t_slv
+# BACKGROUND_IMAGE = "/t_bus.bmp"  # t_bus, t_blu, t_orn, t_red, t_grn, t_crl, or t_slv
 CYCLE_SIGN = "False"  # If True, cycle through the defined SIGNs, set to False if you make a single sign
 UPDATE_INTERVAL = 30  # Seconds between sign updates
 
-network = None        # Force a network connect at startup
-last_time_sync = None # Force a time sync at startup
-sync_interval = 3600  # Reset the time every hour
-current_ride = 0      # Start with ride 0
+network = None         # Force a network connect at startup
+last_time_sync = None  # Force a time sync at startup
+sync_interval = 3600   # Reset the time every hour
+current_ride = 0       # Start with ride 0
 
 # Set debug to True to see sign changes in the serial monitor
 matrixportal = MatrixPortal(status_neopixel=board.NEOPIXEL, debug=False)
@@ -59,52 +59,69 @@ matrixportal = MatrixPortal(status_neopixel=board.NEOPIXEL, debug=False)
 if network is None:
     network = (matrixportal.network)
 
-matrixportal.set_background(BACKGROUND_IMAGE) # Maybe make this part of 30 second updates too?
+# matrixportal.set_background(BACKGROUND_IMAGE) # Maybe make this part of 30 second updates too?
+matrixportal.display.brightness = 1
 
 matrixportal.add_text(     # Add text for the label line at the top
     text_font=terminalio.FONT,
-    text_position=(18,6),  # Adjust to center a static label if scrolling is False
+    text_position=(18, 6),  # Adjust to center a static label if scrolling is False
     text_scale=1,
     text_color=0xFFAC1C,
     scrolling=True,        # Scrolls the sign label, can also be False if your label fits on the sign
 )
 matrixportal.add_text(     # Add text for the first ride time
     text_font=terminalio.FONT,
-    text_position=(22, 16),
+    text_position=(21, 16),
     text_scale=1,
 )
 matrixportal.add_text(     # Add text for the second ride time
     text_font=terminalio.FONT,
-    text_position=(22, 26),
+    text_position=(21, 26),
     text_scale=1,
-    text=("Loading")
+ )
+matrixportal.add_text(     # Add text for the first ride id
+    text_font=terminalio.FONT,
+    text_position=(2, 16),
+    text_color=0xcf2727,
+    text_scale=1,
+    text=("Starting")
+)
+matrixportal.add_text(     # Add text for the second ride id
+    text_font=terminalio.FONT,
+    text_position=(2, 26),
+    text_color=0xcf2727,
+    text_scale=1,
+    text=("Pls Wait")
 )
 
 def get_arrival_in_minutes_from_now(now, date_str):
     # print(f"now: {now}, date_str: {date_str}")  # Uncomment to troubleshoot date and time setting problems
     ride_date = datetime.fromisoformat(date_str).replace(tzinfo=None)
-    return round((ride_date - now).total_seconds() / 60.0)
+    return (ride_date - now).total_seconds()
 
 def get_next_ride_times(current_ride):
     times = []
+    ride_ids = []
     now = datetime.now()
     try:
         # Add a page limit to the line below if you get large fetch results from the API to keep your sign from having memory problems
-        DATA_SOURCE = f"https://api-v3.mbta.com/predictions?filter[stop]={STOP_ID[current_ride]}&filter[route]={ROUTE[current_ride]}&sort=departure_time"# &page[limit]=3"
+        DATA_SOURCE = f"https://api-v3.mbta.com/predictions?filter[stop]={STOP_ID[current_ride]}&filter[route]={ROUTE[current_ride]}&sort=departure_time&page[limit]=4"
         response = network.fetch_data(DATA_SOURCE + f"&filter[direction_id]={DIRECTION[current_ride]}")
         # print(DATA_SOURCE + f"&filter[direction_id]={DIRECTION[current_ride]}")  # Uncomment to troubleshoot API format problems
         data = json.loads(response)
         num_avail_times = len(data["data"])
         if num_avail_times < 1:
-            return []
+            return [],[]
         for i in range(len(data["data"])):
             try:
                 departure_time = data["data"][i]["attributes"]["departure_time"]
+                ride_id = data["data"][i]["relationships"]["route"]["data"]["id"]
                 if departure_time:
                     minute_difference = get_arrival_in_minutes_from_now(now, departure_time)
                     if (minute_difference > 0):  # Only add positive times to avoid erroneous old values (sometimes the api returns these)
                         times.append(minute_difference)
-                        if len(times) == 3 or len(times) >= num_avail_times:
+                        ride_ids.append(int(ride_id)) # Change the bus route to an integer so we can right-justify it in the display
+                        if len(times) == 2 or len(times) >= num_avail_times:
                             break
             except (KeyError, IndexError):
                 # TODO maybe do more error handling here for bad fetch
@@ -113,7 +130,7 @@ def get_next_ride_times(current_ride):
     except Exception as e:
         print(f"Error fetching or parsing data: {e}")
         supervisor.reload()
-    return times  # Return the calculated time(s) in an array variable with one or more entries
+    return times, ride_ids  # Return the calculated time(s) and ride ID(s) in two array variables
 
 last_update = time.monotonic() - UPDATE_INTERVAL
 matrixportal.set_text(f"{LABEL[current_ride]}", 0)  # Set the initial sign scroll
@@ -123,8 +140,7 @@ while True:
         if last_time_sync is None or time.monotonic() - last_time_sync >= sync_interval:
             try:
                 # Set the device time from the network
-                # Be sure to include
-                # timezone = "US/Eastern"
+                # Be sure to include: timezone = "US/Eastern"
                 # in settings.toml or the system time may be set to GMT (UTC? Zulu?)
                 network.get_local_time()
                 last_time_sync = time.monotonic()
@@ -132,9 +148,31 @@ while True:
                 print("Failed to get the current time, error:", e)
                 supervisor.reload()
         now = datetime.now()
-        ride_times = get_next_ride_times(current_ride)
-        matrixportal.set_text(f"{ride_times[0]:2d} min" if len(ride_times) > 0 else "None", 1)  # Update the first ride time
-        matrixportal.set_text(f"{ride_times[1]:2d} min" if len(ride_times) > 1 else "", 2)      # Update the second ride time
+        ride_times, ride_ids = get_next_ride_times(current_ride)
+        if len(ride_times) > 0:
+            matrixportal.display.brightness = 1
+            if ride_times[0] <= 40:
+                matrixportal.set_text_color(0x00ffff, 1)
+                matrixportal.set_text(f"{ride_ids[0]:3d}", 3)  # Update the first ride ID
+                matrixportal.set_text(" arrive", 1)
+            else:
+                matrixportal.set_text_color(0xFFFFFF, 1)
+                matrixportal.set_text(f"{ride_ids[0]:3d}", 3)  # Update the first ride ID
+                matrixportal.set_text(f"{round(ride_times[0] / 60):3d} min", 1)  # Update the first ride time
+        else:
+            matrixportal.display.brightness = 0  # Turn off the display when no predictions
+        if len(ride_times) > 1:
+            if ride_times[1] <= 40:
+                matrixportal.set_text_color(0x00ffff, 2)
+                matrixportal.set_text(f"{ride_ids[1]:3d}", 4)  # Update the first ride ID
+                matrixportal.set_text(" arrive", 2)
+            else:
+                matrixportal.set_text_color(0xFFFFFF, 2)
+                matrixportal.set_text(f"{ride_ids[1]:3d}", 4)  # Update the first ride ID
+                matrixportal.set_text(f"{round(ride_times[1] / 60):3d} min", 2)  # Update the first ride time
+        else:
+            matrixportal.set_text("", 4)
+            matrixportal.set_text("", 2)
         last_update = time.monotonic()
         if CYCLE_SIGN == "True":
             matrixportal.set_text(f"{LABEL[current_ride]}", 0)  # Update the sign scroll

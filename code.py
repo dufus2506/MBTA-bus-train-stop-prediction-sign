@@ -26,13 +26,6 @@ import supervisor
 # ROUTE = ["108","411","430"]       # Train or bus routes for your sign
 # STOP_ID = ["9021","9021","9063"]  # Stop ID(s) from the MBTA https://api-v3.mbta.com/stops
 
-# Makes two signs for the Malden center subway station showing arriving trains in both directions
-# The scrolling sign changes direction while CYCLE_SIGN is True
-# LABEL = ["Forest Hills  ","Oak Grove  "]  # Direction of travel labels
-# DIRECTION = ["0","1"]                     # Stop direction of travel
-# ROUTE = ["Orange","Orange"]               # Train line for your sign
-# STOP_ID = ["place-mlmnl","place-mlmnl"]   # Stop ID(s) from the MBTA
-
 # Makes a single sign for one or more routes at a stop
 # Set CYCLE_SIGN to false so that the scroll won't reset and restart
 # The scroll will pause during sign updates, but not restart

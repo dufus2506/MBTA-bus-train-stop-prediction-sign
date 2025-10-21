@@ -1,5 +1,7 @@
 
-![PXL_20251020_132640350](https://github.com/user-attachments/assets/f20a1410-02b2-4405-b9d6-4a36f59d5d20)
+
+![Next_bus](https://github.com/user-attachments/assets/9adc65a6-cb80-486b-93ea-f2b8f5f69a7c)
+Bus branch that shows bus line and arrival message
 
 
 # MBTA-bus-train-stop-predictions
